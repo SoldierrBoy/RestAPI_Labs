@@ -18,10 +18,10 @@ router = APIRouter(prefix="/books", tags=["Books"])
 @router.get("/", response_model=List[Book])
 async def get_all_books(
         limit: int = Query(10, ge=1),
-        offset: int = Query(0, ge=0),
+        cursor: str | None = None,
         db: Session = Depends(get_db)
 ):
-    return await get_books_service(db, limit, offset)
+    return await get_books_service(db, limit, cursor)
 
 
 @router.get("/{book_id}", response_model=Book)
@@ -51,4 +51,3 @@ async def delete_book(
         db: Session = Depends(get_db)
 ):
     await remove_book_service(db, book_id)
-    return

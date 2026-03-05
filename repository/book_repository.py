@@ -1,28 +1,51 @@
 from sqlalchemy.orm import Session
-from models.book_model import Book
+from uuid import UUID
+import uuid
+
+from models.book_model import BookModel
+from schemas.book_schema import BookCreate
 
 
-async def get_books(db: Session, limit: int, offset: int):
-    return db.query(Book).offset(offset).limit(limit).all()
+def get_books(db: Session, limit: int, cursor: UUID | None):
+
+    query = db.query(BookModel)
+
+    if cursor:
+        query = query.filter(BookModel.id > cursor)
+
+    books = query.order_by(BookModel.id).limit(limit).all()
+
+    return books
 
 
-async def get_book_by_id(db: Session, book_id):
-    return db.query(Book).filter(Book.id == book_id).first()
+def get_book(db: Session, book_id: UUID):
+    return db.query(BookModel).filter(BookModel.id == book_id).first()
 
 
-async def add_book(db: Session, book_data):
-    book = Book(**book_data)
-    db.add(book)
+def create_book(db: Session, book: BookCreate):
+
+    new_book = BookModel(
+        id=uuid.uuid4(),
+        title=book.title,
+        author=book.author,
+        description=book.description,
+        status=book.status,
+        year=book.year
+    )
+
+    db.add(new_book)
     db.commit()
-    db.refresh(book)
-    return book
+    db.refresh(new_book)
+
+    return new_book
 
 
-async def delete_book(db: Session, book_id):
-    book = db.query(Book).filter(Book.id == book_id).first()
+def delete_book(db: Session, book_id: UUID):
+
+    book = db.query(BookModel).filter(BookModel.id == book_id).first()
 
     if book:
         db.delete(book)
         db.commit()
 
-    return True
+    return book

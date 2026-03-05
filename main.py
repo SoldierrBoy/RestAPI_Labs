@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from api.books import router as books_router
 
 from database.db import Base, engine
-from models.book_model import Book
+from models.book_model import BookModel
 
 app = FastAPI()
 

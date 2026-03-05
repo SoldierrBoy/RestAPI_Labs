@@ -5,12 +5,12 @@ import uuid
 from database.db import Base
 
 
-class Book(Base):
+class BookModel(Base):
     __tablename__ = "books"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    title = Column(String, nullable=False)
-    author = Column(String, nullable=False)
-    description = Column(String, nullable=False)
-    status = Column(String, nullable=False)
-    year = Column(Integer, nullable=False)
+    title = Column(String)
+    author = Column(String)
+    description = Column(String)
+    status = Column(String)
+    year = Column(Integer)
