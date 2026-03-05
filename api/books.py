@@ -1,44 +1,35 @@
-from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
+from fastapi import APIRouter, HTTPException, Depends, Query
+from sqlalchemy.orm import Session
+from typing import List
 from uuid import UUID
 
 from schemas.book_schema import BookCreate, Book
 from services.book_service import (
-    get_books,
-    get_book,
-    create_book,
-    remove_book
+    get_books_service,
+    get_book_service,
+    create_book_service,
+    remove_book_service
 )
+from database.db import get_db
 
 router = APIRouter(prefix="/books", tags=["Books"])
 
 
-@router.get("/", response_model=list[Book])
+@router.get("/", response_model=List[Book])
 async def get_all_books(
-        author: Optional[str] = Query(None),
-        status: Optional[str] = Query(None),
-        sort_by: Optional[str] = Query(None)
+        limit: int = Query(10, ge=1),
+        offset: int = Query(0, ge=0),
+        db: Session = Depends(get_db)
 ):
-    books = await get_books()
-
-    if author:
-        books = [b for b in books if b["author"] == author]
-
-    if status:
-        books = [b for b in books if b["status"] == status]
-
-    if sort_by == "title":
-        books = sorted(books, key=lambda x: x["title"])
-
-    if sort_by == "year":
-        books = sorted(books, key=lambda x: x["year"])
-
-    return books
+    return await get_books_service(db, limit, offset)
 
 
 @router.get("/{book_id}", response_model=Book)
-async def get_book_by_id(book_id: UUID):
-    book = await get_book(book_id)
+async def get_book_by_id(
+        book_id: UUID,
+        db: Session = Depends(get_db)
+):
+    book = await get_book_service(db, book_id)
 
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
@@ -47,12 +38,17 @@ async def get_book_by_id(book_id: UUID):
 
 
 @router.post("/", response_model=Book, status_code=201)
-async def add_book(book: BookCreate):
-    new_book = await create_book(book)
-    return new_book
+async def add_book(
+        book: BookCreate,
+        db: Session = Depends(get_db)
+):
+    return await create_book_service(db, book)
 
 
 @router.delete("/{book_id}", status_code=204)
-async def delete_book(book_id: UUID):
-    await remove_book(book_id)
+async def delete_book(
+        book_id: UUID,
+        db: Session = Depends(get_db)
+):
+    await remove_book_service(db, book_id)
     return

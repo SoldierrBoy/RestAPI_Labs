@@ -45,7 +45,6 @@ def test_delete_book():
         }
     )
 
-    book_id = create_response.json()["id"]
 
     delete_response = client.delete(f"/books/{book_id}")
     assert delete_response.status_code == 204
