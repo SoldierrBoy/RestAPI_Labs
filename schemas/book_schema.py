@@ -1,5 +1,4 @@
-from pydantic import BaseModel, Field
-from uuid import UUID
+from pydantic import BaseModel
 from enum import Enum
 
 
@@ -9,12 +8,12 @@ class BookStatus(str, Enum):
 
 
 class BookCreate(BaseModel):
-    title: str = Field(..., min_length=1)
-    author: str = Field(..., min_length=1)
-    description: str = Field(..., min_length=1)
+    title: str
+    author: str
+    description: str
     status: BookStatus
-    year: int = Field(..., ge=0)
+    year: int
 
 
 class Book(BookCreate):
-    id: UUID
+    id: str

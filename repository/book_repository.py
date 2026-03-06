@@ -1,51 +1,55 @@
-from sqlalchemy.orm import Session
-from uuid import UUID
-import uuid
-
-from models.book_model import BookModel
+from database.mongo import books_collection
 from schemas.book_schema import BookCreate
+from bson import ObjectId
 
+async def get_books(limit: int, offset: int):
 
-def get_books(db: Session, limit: int, cursor: UUID | None):
+    books_cursor = books_collection.find().skip(offset).limit(limit)
 
-    query = db.query(BookModel)
+    books = []
 
-    if cursor:
-        query = query.filter(BookModel.id > cursor)
-
-    books = query.order_by(BookModel.id).limit(limit).all()
+    for book in books_cursor:
+        book["id"] = str(book["_id"])
+        del book["_id"]
+        books.append(book)
 
     return books
 
 
-def get_book(db: Session, book_id: UUID):
-    return db.query(BookModel).filter(BookModel.id == book_id).first()
+async def get_book(book_id: str):
+
+    book = books_collection.find_one({"_id": ObjectId(book_id)})
+
+    if not book:
+        return None
+
+    book["id"] = str(book["_id"])
+    del book["_id"]
+
+    return book
 
 
-def create_book(db: Session, book: BookCreate):
+async def create_book(book: BookCreate):
 
-    new_book = BookModel(
-        id=uuid.uuid4(),
-        title=book.title,
-        author=book.author,
-        description=book.description,
-        status=book.status,
-        year=book.year
-    )
+    book_dict = book.model_dump()
 
-    db.add(new_book)
-    db.commit()
-    db.refresh(new_book)
+    result = books_collection.insert_one(book_dict)
 
-    return new_book
+    book_dict["id"] = str(result.inserted_id)
+
+    return book_dict
 
 
-def delete_book(db: Session, book_id: UUID):
+async def delete_book(book_id: str):
 
-    book = db.query(BookModel).filter(BookModel.id == book_id).first()
+    book = books_collection.find_one({"_id": ObjectId(book_id)})
 
-    if book:
-        db.delete(book)
-        db.commit()
+    if not book:
+        return None
+
+    books_collection.delete_one({"_id": ObjectId(book_id)})
+
+    book["id"] = str(book["_id"])
+    del book["_id"]
 
     return book
