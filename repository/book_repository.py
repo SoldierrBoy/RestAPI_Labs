@@ -2,7 +2,7 @@ from database.mongo import books_collection
 from schemas.book_schema import BookCreate
 from bson import ObjectId
 
-async def get_books(limit: int, offset: int):
+def get_books(limit: int, offset: int):
 
     books_cursor = books_collection.find().skip(offset).limit(limit)
 
@@ -16,7 +16,7 @@ async def get_books(limit: int, offset: int):
     return books
 
 
-async def get_book(book_id: str):
+def get_book(book_id: str):
 
     book = books_collection.find_one({"_id": ObjectId(book_id)})
 
@@ -29,9 +29,9 @@ async def get_book(book_id: str):
     return book
 
 
-async def create_book(book: BookCreate):
+def create_book(book):
 
-    book_dict = book.model_dump()
+    book_dict = book
 
     result = books_collection.insert_one(book_dict)
 
@@ -40,7 +40,7 @@ async def create_book(book: BookCreate):
     return book_dict
 
 
-async def delete_book(book_id: str):
+def delete_book(book_id: str):
 
     book = books_collection.find_one({"_id": ObjectId(book_id)})
 

@@ -9,17 +9,16 @@ from repository.book_repository import (
 from schemas.book_schema import BookCreate
 
 
-async def get_books_service(limit: int, offset: int):
-    return await get_books(limit, offset)
+def get_books_service(limit, offset):
+    return get_books(limit, offset)
+
+def get_book_service(book_id: str):
+    return get_book(book_id)
 
 
-async def get_book_service(book_id: str):
-    return await get_book(book_id)
+def create_book_service(book):
+    return create_book(book)
 
 
-async def create_book_service(book: BookCreate):
-    return await create_book(book)
-
-
-async def remove_book_service(book_id: str):
-    return await delete_book(book_id)
+def remove_book_service(book_id: str):
+    return delete_book(book_id)

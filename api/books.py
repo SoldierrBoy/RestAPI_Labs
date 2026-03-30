@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query
-from typing import List
+from flask import request
+from flask_restful import Resource
+from flasgger import swag_from
 
-from schemas.book_schema import BookCreate, Book
 from services.book_service import (
     get_books_service,
     get_book_service,
@@ -9,37 +9,111 @@ from services.book_service import (
     remove_book_service
 )
 
-router = APIRouter(prefix="/books", tags=["Books"])
+
+class BooksResource(Resource):
+
+    @swag_from({
+        'tags': ['Books'],
+        'parameters': [
+            {
+                'name': 'limit',
+                'in': 'query',
+                'type': 'integer',
+                'required': False,
+                'default': 10
+            },
+            {
+                'name': 'offset',
+                'in': 'query',
+                'type': 'integer',
+                'required': False,
+                'default': 0
+            }
+        ],
+        'responses': {
+            200: {
+                'description': 'List of books'
+            }
+        }
+    })
+    def get(self):
+        limit = int(request.args.get("limit", 10))
+        offset = int(request.args.get("offset", 0))
+        return get_books_service(limit, offset)
+
+    @swag_from({
+        'tags': ['Books'],
+        'parameters': [
+            {
+                'name': 'body',
+                'in': 'body',
+                'required': True,
+                'schema': {
+                    'type': 'object',
+                    'properties': {
+                        'title': {'type': 'string'},
+                        'author': {'type': 'string'},
+                        'description': {'type': 'string'},
+                        'status': {
+                            'type': 'string',
+                            'enum': ['available', 'borrowed']
+                        },
+                        'year': {'type': 'integer'}
+                    }
+                }
+            }
+        ],
+        'responses': {
+            201: {
+                'description': 'Book created'
+            }
+        }
+    })
+    def post(self):
+        data = request.get_json()
+        return create_book_service(data), 201
 
 
-@router.get("/", response_model=List[Book])
-async def get_all_books(
-        limit: int = Query(10, ge=1),
-        offset: int = Query(0, ge=0)
-):
-    return await get_books_service(limit, offset)
+class BookResource(Resource):
 
+    @swag_from({
+        'tags': ['Books'],
+        'parameters': [
+            {
+                'name': 'book_id',
+                'in': 'path',
+                'type': 'string',
+                'required': True
+            }
+        ],
+        'responses': {
+            200: {'description': 'Book found'},
+            404: {'description': 'Book not found'}
+        }
+    })
+    def get(self, book_id):
+        book = get_book_service(book_id)
+        if not book:
+            return {"message": "Book not found"}, 404
+        return book
 
-@router.get("/{book_id}", response_model=Book)
-async def get_book_by_id(book_id: str):
-
-    book = await get_book_service(book_id)
-
-    if not book:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    return book
-
-
-@router.post("/", response_model=Book, status_code=201)
-async def add_book(book: BookCreate):
-    return await create_book_service(book)
-
-
-@router.delete("/{book_id}", status_code=204)
-async def delete_book(book_id: str):
-
-    book = await remove_book_service(book_id)
-
-    if not book:
-        raise HTTPException(status_code=404, detail="Book not found")
+    @swag_from({
+        'tags': ['Books'],
+        'parameters': [
+            {
+                'name': 'book_id',
+                'in': 'path',
+                'type': 'string',
+                'required': True
+            }
+        ],
+        'responses': {
+            204: {'description': 'Book deleted'},
+            404: {'description': 'Book not found'}
+        }
+    })
+    def delete(self, book_id):
+        book = remove_book_service(book_id)
+        if not book:
+            return {"message": "Book not found"}, 404
+        return "", 204
