@@ -30,7 +30,10 @@ def test_add_book():
 def test_get_books():
     response = client.get("/books/")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    data = response.json()
+    assert isinstance(data, dict)
+    assert "items" in data
+    assert isinstance(data["items"], list)
 
 
 def test_delete_book():
@@ -45,6 +48,7 @@ def test_delete_book():
         }
     )
 
+    book_id = create_response.json()["id"]
 
     delete_response = client.delete(f"/books/{book_id}")
     assert delete_response.status_code == 204

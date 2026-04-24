@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
 
-from schemas.book_schema import BookCreate, Book
+from schemas.book_schema import BookCreate, Book , BookPaginationResponse
 from services.book_service import (
     get_books_service,
     get_book_service,
@@ -15,14 +15,14 @@ from database.db import get_db
 router = APIRouter(prefix="/books", tags=["Books"])
 
 
-@router.get("/", response_model=List[Book])
+
+@router.get("/", response_model=BookPaginationResponse)
 async def get_all_books(
         limit: int = Query(10, ge=1),
         offset: int = Query(0, ge=0),
         db: Session = Depends(get_db)
 ):
     return await get_books_service(db, limit, offset)
-
 
 @router.get("/{book_id}", response_model=Book)
 async def get_book_by_id(
