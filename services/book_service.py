@@ -28,5 +28,11 @@ async def create_book_service(db: Session, book: BookCreate):
     return create_book(db, book)
 
 
-async def remove_book_service(db: Session, book_id: str):
-    return delete_book(db, book_id)
+
+async def remove_book_service(db: Session, book_id):
+    return await delete_book(db, book_id)
+
+async def get_books_service(db: Session, limit: int, offset: int):
+    items, total = await get_books(db, limit, offset)
+    return {"items": items, "total": total, "limit": limit, "offset": offset}
+

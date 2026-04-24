@@ -48,4 +48,10 @@ def delete_book(db: Session, book_id: UUID):
         db.delete(book)
         db.commit()
 
-    return book
+
+    return True
+async def get_books(db: Session, limit: int, offset: int):
+    items = db.query(Book).offset(offset).limit(limit).all()
+    total = db.query(Book).count()
+    return items, total
+
