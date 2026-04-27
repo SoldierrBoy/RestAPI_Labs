@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv httpx pytest motor
+
+RUN pip install fastapi uvicorn motor python-dotenv httpx pytest
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

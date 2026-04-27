@@ -1,7 +1,9 @@
-from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
 
-client = MongoClient("mongodb://mongo:27017")
+MONGO_URL = "mongodb://mongo:27017"
 
-db = client["library"]
-
-books_collection = db["books"]
+async def get_books_collection():
+    client = AsyncIOMotorClient(MONGO_URL)
+    db = client["library"]
+    return db["books"]
