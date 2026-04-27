@@ -4,6 +4,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install flask flask-restful flasgger pymongo pydantic
+RUN pip install flask flask-restful flasgger pymongo pydantic pytest
 
 CMD ["python", "main.py"]

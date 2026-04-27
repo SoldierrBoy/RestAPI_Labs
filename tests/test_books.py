@@ -1,50 +1,88 @@
 import sys
 import os
+import pytest
+
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from fastapi.testclient import TestClient
 from main import app
 
-client = TestClient(app)
+
+@pytest.fixture
+def client():
+    app.config['TESTING'] = True
+    with app.test_client() as client:
+        yield client
 
 
-def test_add_book():
+def test_add_book(client):
     response = client.post(
         "/books/",
         json={
-            "title": "Test Book",
-            "author": "Test Author",
-            "description": "Test Description",
+            "title": "Flask Test Book",
+            "author": "Flask Author",
+            "description": "Testing Flask-RESTful",
             "status": "available",
-            "year": 2024
+            "year": 2026
         }
     )
-
     assert response.status_code == 201
-    data = response.json()
-    assert data["title"] == "Test Book"
+    data = response.get_json()
+    assert data["title"] == "Flask Test Book"
     assert "id" in data
 
 
-def test_get_books():
-    response = client.get("/books/")
+def test_get_books(client):
+    response = client.get("/books/?limit=5&offset=0")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert isinstance(response.get_json(), list)
 
 
-def test_delete_book():
-    create_response = client.post(
-        "/books/",
-        json={
-            "title": "Delete Book",
+def test_pagination_logic(client):
+
+    for i in range(2):
+        client.post("/books/", json={
+            "title": f"Page Book {i}",
             "author": "Author",
             "description": "Desc",
             "status": "available",
-            "year": 2023
-        }
-    )
+            "year": 2026
+        })
 
 
-    delete_response = client.delete(f"/books/{book_id}")
-    assert delete_response.status_code == 204
+    response = client.get("/books/?limit=1")
+    data = response.get_json()
+    assert len(data) == 1
+
+
+def test_get_book_by_id(client):
+
+    create_res = client.post("/books/", json={
+        "title": "Specific Book",
+        "author": "Author",
+        "year": 2026,
+        "description": "Desc",
+        "status": "available"
+    })
+    book_id = create_res.get_json()["id"]
+
+    response = client.get(f"/books/{book_id}")
+    assert response.status_code == 200
+    assert response.get_json()["title"] == "Specific Book"
+
+
+def test_delete_book(client):
+    create_res = client.post("/books/", json={
+        "title": "To Delete",
+        "author": "Author",
+        "year": 2026,
+        "description": "Desc",
+        "status": "available"
+    })
+    book_id = create_res.get_json()["id"]
+
+    delete_res = client.delete(f"/books/{book_id}")
+    assert delete_res.status_code == 204
+
+    get_res = client.get(f"/books/{book_id}")
+    assert get_res.status_code == 404

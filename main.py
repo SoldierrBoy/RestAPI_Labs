@@ -9,7 +9,7 @@ api = Api(app)
 
 swagger = Swagger(app)
 
-# routes
+
 api.add_resource(BooksResource, "/books/")
 api.add_resource(BookResource, "/books/<string:book_id>")
 
