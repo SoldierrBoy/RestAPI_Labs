@@ -1,10 +1,11 @@
 import os
-from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
 
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+MONGO_URL = os.getenv("MONGO_URL", "mongodb://mongo:27017")
 
-client = MongoClient(MONGO_URL)
-
+client = AsyncIOMotorClient(MONGO_URL)
 db = client["library"]
 
+# Колекції
 books_collection = db["books"]
+users_collection = db["users"] # Нова колекція для користувачів

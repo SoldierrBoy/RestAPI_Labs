@@ -1,18 +1,13 @@
-from repository.book_repository import (
-    get_all_books,
-    get_book,
-    create_book,
-    delete_book
-)
+from repository import book_repository
 
-def get_books_service(limit, offset):
-    return get_all_books(limit, offset)
+async def get_books_service(limit, offset):
+    return await book_repository.get_all_books(limit, offset)
 
-def get_book_service(book_id: str):
-    return get_book(book_id)
+async def get_book_service(book_id):
+    return await book_repository.get_book(book_id)
 
-def create_book_service(book_data):
-    return create_book(book_data)
+async def create_book_service(book_data):
+    return await book_repository.create_book(book_data)
 
-def remove_book_service(book_id: str):
-    return delete_book(book_id)
+async def remove_book_service(book_id):
+    return await book_repository.delete_book(book_id)

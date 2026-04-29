@@ -17,7 +17,7 @@ services:
     depends_on:
       - mongo
     ports:
-      - "5000:5000"
+      - "8000:8000"
     environment:
       - MONGO_URL=mongodb://mongo:27017
 

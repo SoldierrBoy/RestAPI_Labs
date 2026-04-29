@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from enum import Enum
 
 
@@ -17,3 +17,11 @@ class BookCreate(BaseModel):
 
 class Book(BookCreate):
     id: str
+
+class UserSchema(BaseModel):
+    email: EmailStr
+    password: str
+
+class TokenSchema(BaseModel):
+    access_token: str
+    refresh_token: str

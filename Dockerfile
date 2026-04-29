@@ -4,6 +4,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install flask flask-restful flasgger pymongo pydantic pytest
+RUN pip install fastapi uvicorn motor "pydantic[email]" python-jose[cryptography] "passlib[bcrypt]" bcrypt==4.0.1 email-validator pytest pytest-anyio httpx
 
-CMD ["python", "main.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
