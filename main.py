@@ -8,7 +8,11 @@ from auth.auth_handler import create_tokens, get_password_hash, verify_password,
 from auth.auth_bearer import JWTBearer
 from rate_limiter import rate_limit
 
-app = FastAPI(title="Library API with JWT")
+
+app = FastAPI(
+    title="Library API with JWT",
+    dependencies=[Depends(rate_limit)]
+)
 
 
 @app.post("/user/signup", tags=["User"])
@@ -40,7 +44,7 @@ async def refresh_token(refresh_token: str = Body(..., embed=True)):
         return create_tokens(payload["user_id"])
     raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
 
-@app.get("/books/", response_model=List[Book],dependencies=[Depends(rate_limit)], tags=["Books"])
+@app.get("/books/", response_model=List[Book], tags=["Books"])
 async def get_all_books(
         limit: int = Query(10, ge=1),
         offset: int = Query(0, ge=0)
